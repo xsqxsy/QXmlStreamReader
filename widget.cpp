@@ -15,8 +15,15 @@ Widget::Widget(QWidget *parent) :
     header << "entry" << "pages";
     ui->treeWidget->setHeaderLabels(header);
 
-    QHeaderView* view = ui->treeWidget->header();
-    view->setSectionResizeMode(QHeaderView::ResizeToContents);
+    QHeaderView* headerView = ui->treeWidget->header();
+    headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    QTreeWidgetItem* headerItem = ui->treeWidget->headerItem();
+    int num = headerItem->columnCount();
+    for(int i=0; i<num; i++)
+    {
+        headerItem->setTextAlignment(i, Qt::AlignHCenter);
+    }
 
 
     readFile("../QXmlStreamReader/sample.xml");
@@ -36,6 +43,7 @@ bool Widget::readFile(const QString &fileName)
     if(isOk)
     {
         reader.setDevice(&file);
+
         while(!reader.atEnd())
         {
             if(reader.isStartElement())
@@ -69,6 +77,7 @@ bool Widget::readFile(const QString &fileName)
 void Widget::readBookindexElement()
 {
     reader.readNext();
+
     while(!reader.atEnd())
     {
         if(reader.isEndElement())
@@ -87,9 +96,9 @@ void Widget::readBookindexElement()
                 skipUnknownElement();
             }
         }
+
         reader.readNext();
     }
-
 }
 
 void Widget::readEntryElement(QTreeWidgetItem *parent)
@@ -98,6 +107,7 @@ void Widget::readEntryElement(QTreeWidgetItem *parent)
     item->setText(0, reader.attributes().value("term").toString());
 
     reader.readNext();
+
     while(!reader.atEnd())
     {
         if(reader.isEndElement())
@@ -121,7 +131,6 @@ void Widget::readEntryElement(QTreeWidgetItem *parent)
         }
 
         reader.readNext();
-
     }
 }
 
@@ -140,5 +149,19 @@ void Widget::readPageElement(QTreeWidgetItem *parent)
 
 void Widget::skipUnknownElement()
 {
+    reader.readNext();
+    while(!reader.atEnd())
+    {
+        if(reader.isEndElement())
+        {
+            break;
+        }
 
+        if(reader.isStartElement())
+        {
+            skipUnknownElement();
+        }
+
+        reader.readNext();
+    }
 }
